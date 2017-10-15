@@ -55,49 +55,70 @@ class Wp_Contributers_Admin {
 	}
 
 	/**
-	 * Register the stylesheets for the admin area.
-	 *
-	 * @since    1.0.0
+	 * Add meta box to the post
 	 */
-	public function enqueue_styles() {
-
-		/**
-		 * This function is provided for demonstration purposes only.
-		 *
-		 * An instance of this class should be passed to the run() function
-		 * defined in Wp_Contributers_Loader as all of the hooks are defined
-		 * in that particular class.
-		 *
-		 * The Wp_Contributers_Loader will then create the relationship
-		 * between the defined hooks and the functions defined in this
-		 * class.
-		 */
-
-		wp_enqueue_style( $this->plugin_name, plugin_dir_url( __FILE__ ) . 'css/wp-contributers-admin.css', array(), $this->version, 'all' );
-
+	public function wpc_contributors_metabox() {
+		add_meta_box( 'wpc-contributors-metabox', __( 'Contributors', WPC_TEXT_DOMAIN ), array( $this, 'wpc_contributors_metabox_content' ), 'post', 'side', 'high', null );
 	}
 
 	/**
-	 * Register the JavaScript for the admin area.
-	 *
-	 * @since    1.0.0
+	 * Price metabox - show content
 	 */
-	public function enqueue_scripts() {
-
-		/**
-		 * This function is provided for demonstration purposes only.
-		 *
-		 * An instance of this class should be passed to the run() function
-		 * defined in Wp_Contributers_Loader as all of the hooks are defined
-		 * in that particular class.
-		 *
-		 * The Wp_Contributers_Loader will then create the relationship
-		 * between the defined hooks and the functions defined in this
-		 * class.
-		 */
-
-		wp_enqueue_script( $this->plugin_name, plugin_dir_url( __FILE__ ) . 'js/wp-contributers-admin.js', array( 'jquery' ), $this->version, false );
-
+	public function wpc_contributors_metabox_content() {
+		global $post;
+		$contributors = get_post_meta( $post->ID, 'post-contributors', true );
+		if( ! $contributors ) {
+			$contributors = array();
+		}
+		foreach( get_users() as $user ) {
+			$checked = ( isset( $contributors ) && in_array( $user->ID, $contributors ) ) ? 'checked' : '';
+			?>
+			<p class="wpc-contributor">
+			<input type="checkbox" <?php echo $checked;?> id="user-<?php echo $user->ID;?>" name="post_contributors[]" value="<?php echo $user->ID;?>">
+			<label for="user-<?php echo $user->ID;?>"><?php echo $user->data->display_name;?></label>
+			</p>
+			<?php
+		}
 	}
 
+	/**
+	 * Actions performed to save the meta fields in books
+	 */
+	public function wpc_update_contributors_metabox( $postid ) {
+		if( get_post_type( $postid ) == 'post' ) {
+			if( isset( $_POST['post_contributors'] ) ) {
+				$contributors = wp_unslash( $_POST['post_contributors'] );
+				update_post_meta( $postid, 'post-contributors', $contributors );
+			}
+		}
+	}
+
+	/**
+	 * Actions performed to add new column headings in the posts list
+	 */
+	public function wpc_new_column_heading( $defaults ) {
+		$defaults['post-contributors']		=	__( 'Contributors', WPC_TEXT_DOMAIN );
+		return $defaults;
+	}
+
+	/**
+	 * Actions performed to add new column content in the posts list
+	 */
+	public function wpc_new_column_content( $column_name, $postid ) {
+		$contributors = get_post_meta( $postid, 'post-contributors', true );
+		if ( $column_name == 'post-contributors' ) {
+			if( !empty( $contributors ) ) {
+				$contributors_str = '';
+				foreach( $contributors as $cid ) {
+					$contributor = get_userdata( $cid );
+					$contrubutor_edit_url = admin_url( 'user-edit.php?user_id='.$cid );
+					$contributors_str .= '<a target="_blank" href=" ' . $contrubutor_edit_url . ' ">' . $contributor->data->display_name . '</a>, ';
+				}
+				$contributors_str = rtrim( $contributors_str, ', ' );
+			} else {
+				$contributors_str = '--';
+			}
+			echo $contributors_str;
+		}
+	}
 }

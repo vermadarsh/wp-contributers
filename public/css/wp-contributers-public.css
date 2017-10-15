@@ -2,3 +2,16 @@
  * All of the CSS for your public-facing functionality should be
  * included in this file.
  */
+.wpc-contributors{
+	border: 1px solid #CCC;
+	border-radius: 2px;
+	padding: 10px;
+}
+.wpc-no-contributor{
+	color: red;
+}
+.wpc-contributor {
+	margin-right: 2%;
+	display: inline-block;
+	text-align: center;
+}

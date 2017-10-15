@@ -59,45 +59,42 @@ class Wp_Contributers_Public {
 	 *
 	 * @since    1.0.0
 	 */
-	public function enqueue_styles() {
-
-		/**
-		 * This function is provided for demonstration purposes only.
-		 *
-		 * An instance of this class should be passed to the run() function
-		 * defined in Wp_Contributers_Loader as all of the hooks are defined
-		 * in that particular class.
-		 *
-		 * The Wp_Contributers_Loader will then create the relationship
-		 * between the defined hooks and the functions defined in this
-		 * class.
-		 */
-
-		wp_enqueue_style( $this->plugin_name, plugin_dir_url( __FILE__ ) . 'css/wp-contributers-public.css', array(), $this->version, 'all' );
-
+	public function wpc_enqueue_styles() {
+		wp_enqueue_style( $this->plugin_name, plugin_dir_url( __FILE__ ) . 'css/wp-contributers-public.css' );
 	}
 
 	/**
-	 * Register the JavaScript for the public-facing side of the site.
 	 *
-	 * @since    1.0.0
 	 */
-	public function enqueue_scripts() {
+	public function wpc_add_contributors_list( $content ) {
+		
+		global $post;
+		$contributors = get_post_meta( $post->ID, 'post-contributors', true );
+		if( ! $contributors ) {
+			$contributors = array();
+		}
 
-		/**
-		 * This function is provided for demonstration purposes only.
-		 *
-		 * An instance of this class should be passed to the run() function
-		 * defined in Wp_Contributers_Loader as all of the hooks are defined
-		 * in that particular class.
-		 *
-		 * The Wp_Contributers_Loader will then create the relationship
-		 * between the defined hooks and the functions defined in this
-		 * class.
-		 */
+		$content .= '<div class="wpc-contributors">';
+		$content .= '<h3>' . __( 'Contributors', WPC_TEXT_DOMAIN ) . '</h3>';
+		if( !empty( $contributors ) ) {
+			foreach( $contributors as $cid ) {
+				$contributor = get_userdata( $cid );
+				$c_avatar = get_avatar( $cid );
+				$c_url = get_author_posts_url( $cid );
 
-		wp_enqueue_script( $this->plugin_name, plugin_dir_url( __FILE__ ) . 'js/wp-contributers-public.js', array( 'jquery' ), $this->version, false );
+				$content .= '<div class="wpc-contributor">';
+				$content .= '<a href=" ' . $c_url . ' " title=" ' . $contributor->data->display_name . ' ">';
+				$content .= $c_avatar;
+				$content .= '<span class="wpc-contributor-name">' . $contributor->data->display_name . '</span>';
+				$content .= '</a>';
+				$content .= '</div>';
+			}
+		} else {
+			$content .= '<p class="wpc-no-contributor">' . __( 'No Contributor!', WPC_TEXT_DOMAIN ) . '</p>';
+		}
+		$content .= '</div>';
 
+		return $content;
 	}
 
 }

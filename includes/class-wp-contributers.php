@@ -67,8 +67,8 @@ class Wp_Contributers {
 	 * @since    1.0.0
 	 */
 	public function __construct() {
-		if ( defined( 'PLUGIN_NAME_VERSION' ) ) {
-			$this->version = PLUGIN_NAME_VERSION;
+		if ( defined( 'WPC_PLUGIN_NAME_VERSION' ) ) {
+			$this->version = WPC_PLUGIN_NAME_VERSION;
 		} else {
 			$this->version = '1.0.0';
 		}
@@ -154,8 +154,10 @@ class Wp_Contributers {
 
 		$plugin_admin = new Wp_Contributers_Admin( $this->get_plugin_name(), $this->get_version() );
 
-		$this->loader->add_action( 'admin_enqueue_scripts', $plugin_admin, 'enqueue_styles' );
-		$this->loader->add_action( 'admin_enqueue_scripts', $plugin_admin, 'enqueue_scripts' );
+		$this->loader->add_action( 'add_meta_boxes', $plugin_admin, 'wpc_contributors_metabox' );
+		$this->loader->add_action( 'save_post', $plugin_admin, 'wpc_update_contributors_metabox' );
+		$this->loader->add_filter( 'manage_post_posts_columns', $plugin_admin, 'wpc_new_column_heading', 10 );
+		$this->loader->add_action( 'manage_post_posts_custom_column', $plugin_admin, 'wpc_new_column_content', 10, 2 );
 
 	}
 
@@ -170,8 +172,8 @@ class Wp_Contributers {
 
 		$plugin_public = new Wp_Contributers_Public( $this->get_plugin_name(), $this->get_version() );
 
-		$this->loader->add_action( 'wp_enqueue_scripts', $plugin_public, 'enqueue_styles' );
-		$this->loader->add_action( 'wp_enqueue_scripts', $plugin_public, 'enqueue_scripts' );
+		$this->loader->add_action( 'wp_enqueue_scripts', $plugin_public, 'wpc_enqueue_styles' );
+		$this->loader->add_filter( 'the_content', $plugin_public, 'wpc_add_contributors_list' );
 
 	}
 

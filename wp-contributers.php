@@ -15,7 +15,7 @@
  * @wordpress-plugin
  * Plugin Name:       WordPress Contributers
  * Plugin URI:        https://github.com/vermadarsh/wp-contributers
- * Description:       This is a short description of what the plugin does. It's displayed in the WordPress admin area.
+ * Description:       This plugin adds a method to add another authors to the posts.
  * Version:           1.0.0
  * Author:            Adarsh Verma
  * Author URI:        https://www.facebook.com/vermadarsh
@@ -29,35 +29,20 @@
 if ( ! defined( 'WPINC' ) ) {
 	die;
 }
-
-define( 'PLUGIN_NAME_VERSION', '1.0.0' );
-
-/**
- * The code that runs during plugin activation.
- * This action is documented in includes/class-wp-contributers-activator.php
- */
-function activate_wp_contributers() {
-	require_once plugin_dir_path( __FILE__ ) . 'includes/class-wp-contributers-activator.php';
-	Wp_Contributers_Activator::activate();
+//Plugin Version
+define( 'WPC_PLUGIN_NAME_VERSION', '1.0.0' );
+//Plugin Text Domain
+if ( ! defined( 'WPC_TEXT_DOMAIN' ) ) {
+	define( 'WPC_TEXT_DOMAIN', 'wp-contributers' );
 }
-
-/**
- * The code that runs during plugin deactivation.
- * This action is documented in includes/class-wp-contributers-deactivator.php
- */
-function deactivate_wp_contributers() {
-	require_once plugin_dir_path( __FILE__ ) . 'includes/class-wp-contributers-deactivator.php';
-	Wp_Contributers_Deactivator::deactivate();
+//Plugin URL
+if ( ! defined( 'WPC_PLUGIN_URL' ) ) {
+	define( 'WPC_PLUGIN_URL', plugin_dir_url(__FILE__) );
 }
-
-register_activation_hook( __FILE__, 'activate_wp_contributers' );
-register_deactivation_hook( __FILE__, 'deactivate_wp_contributers' );
-
-/**
- * The core plugin class that is used to define internationalization,
- * admin-specific hooks, and public-facing site hooks.
- */
-require plugin_dir_path( __FILE__ ) . 'includes/class-wp-contributers.php';
+//Plugin Path
+if ( ! defined( 'WPC_PLUGIN_PATH' ) ) {
+	define( 'WPC_PLUGIN_PATH', plugin_dir_path(__FILE__) );
+}
 
 /**
  * Begins execution of the plugin.
@@ -70,8 +55,20 @@ require plugin_dir_path( __FILE__ ) . 'includes/class-wp-contributers.php';
  */
 function run_wp_contributers() {
 
+	/**
+	 * The core plugin class that is used to define internationalization,
+	 * admin-specific hooks, and public-facing site hooks.
+	 */
+	require plugin_dir_path( __FILE__ ) . 'includes/class-wp-contributers.php';
 	$plugin = new Wp_Contributers();
 	$plugin->run();
 
 }
-run_wp_contributers();
+
+/**
+ * Check plugin requirement or any other thing when plugins load
+ */
+add_action('plugins_loaded', 'wpc_plugin_init');
+function wpc_plugin_init() {
+	run_wp_contributers();
+}
